@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Jobseeker() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function Jobseeker() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
+  const [applications, setApplications] = useState([]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,8 +53,62 @@ export default function Jobseeker() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+    useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !(dropdownRef.current as any).contains(event.target)
+      ) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleRevokeApplication = async (applicationId: string) => {
+    const confirmDelete = confirm(
+      "Are you sure you want to revoke this application?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/application/${applicationId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to revoke application.");
+      }
+
+      // Remove it from state
+      setApplications((prev) =>
+        prev.filter((app) => app._id !== applicationId)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Error while revoking the application.");
+    }
+  };
+
+  useEffect(() => {
+    if (!userData || !userData._id) return;
+
+    const fetchApplications = async () => {
+      try {
+        const res = await fetch(`/api/jobseeker/applications/${userData._id}`);
+        const data = await res.json();
+        setApplications(data);
+      } catch (err) {
+        console.error("Failed to fetch applications:", err);
+      }
+    };
+
+    fetchApplications();
+  }, [userData]); // Run only when user is loaded
+
   const userName = userData?.name || session?.user?.name || "User";
-  const userImage = userData?.image || session?.user?.image || "/user-avatar.png";
+  const userImage = userData?.userImage || session?.user?.image || "/user-avatar.png";
 
   if (loading) {
     return (
@@ -156,24 +212,71 @@ export default function Jobseeker() {
         </div>
 
         {/* Jobs applied */}
-        <section className="mt-6 bg-white/40 backdrop-blur-lg p-4 md:p-6 rounded-xl shadow-xl text-primary">
-        <h2 className="text-xl md:text-2xl font-bold mb-4">Jobs Applied</h2>
-        
-        {/* Example of applied jobs, replace with dynamic data if available */}
-        <div className="space-y-4">
-            <div className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-all">
-            <h3 className="text-lg font-semibold">Frontend Developer at TechSpark</h3>
-            <p className="text-sm text-gray-600">Applied on: May 14, 2025</p>
-            <span className="inline-block mt-2 px-3 py-1 bg-accent text-white rounded-full text-xs">Under Review</span>
-            </div>
+        <div className="backdrop-blur-lg bg-white/20 p-4 rounded-xl mt-8">
 
-            <div className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-all">
-            <h3 className="text-lg font-semibold">UI/UX Designer at Creatix</h3>
-            <p className="text-sm text-gray-600">Applied on: May 10, 2025</p>
-            <span className="inline-block mt-2 px-3 py-1 bg-accent text-white rounded-full text-xs">Interview Scheduled</span>
+          {applications.length === 0 ? (
+            <p>No applications yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {applications.map((app) => (
+                <div
+                  key={app._id}
+                  className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-all"
+                >
+                  <h3 className="text-lg font-semibold">
+                    {app.jobId?.title || "Job Title"} at{" "}
+                    {app.jobId?.employer?.companyName || "Unknown Company"}
+                  </h3>
+
+                  <p className="text-sm text-gray-600">
+                    Applied on: {new Date(app.appliedAt).toDateString()}
+                  </p>
+
+                  <p className="text-sm text-gray-600">
+                    Resume:{" "}
+                    <a
+                      href={app.resumeLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      View Resume
+                    </a>
+                  </p>
+
+                  {/* Interview Details */}
+                  {app.interviewDate && (
+                    <p className="text-sm text-gray-600">
+                      Interview on: {new Date(app.interviewDate).toDateString()}
+                      {app.interviewTime && ` at ${app.interviewTime}`}
+                      {app.interviewLocation && ` (${app.interviewLocation})`}
+                    </p>
+                  )}
+
+                  {/* Joining Details */}
+                  {app.joiningDate && (
+                    <p className="text-sm text-gray-600">
+                      Joining Date: {new Date(app.joiningDate).toDateString()}
+                    </p>
+                  )}
+
+                  {/* Status Badge */}
+                  <span className="inline-block mt-2 px-3 py-1 bg-accent text-white rounded-full text-xs capitalize">
+                    {app.status}
+                  </span>
+
+                  {/* Revoke Button */}
+                  <Button
+                    onClick={() => handleRevokeApplication(app._id)}
+                    className="ml-4 mt-2 text-sm bg-red-200 text-red-600 hover:bg-red-600 hover:text-white"
+                  >
+                    Revoke Application
+                  </Button>
+                </div>
+              ))}
             </div>
+          )}
         </div>
-        </section>
 
       </main>
       

@@ -30,8 +30,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI ||
-  'mongodb+srv://khwajasadiya:jc83AzpIiDIsRX8k@cluster0.klk7mcf.mongodb.net/joblinker?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,

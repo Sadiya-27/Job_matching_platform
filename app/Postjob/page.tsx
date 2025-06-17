@@ -386,7 +386,7 @@ const checkStrikeLimit = async (userId) => {
 
   const userName = userData?.name || session?.user?.name || "Employer";
   const userImage =
-    userData?.image || session?.user?.image || "/user-avatar.png";
+    userData?.userImage || session?.user?.image || "/user-avatar.png";
   const companyName = employerData?.companyName || "Your Company";
   const websiteUrl = employerData?.websiteUrl || "Your Company website Url";
 
@@ -431,7 +431,7 @@ const checkStrikeLimit = async (userId) => {
                 My Profile
               </a>
               <a
-                href="/settings"
+                href="/empSettings"
                 className="block px-4 py-2 text-primary hover:bg-cyan-300"
               >
                 Settings
@@ -526,7 +526,7 @@ const checkStrikeLimit = async (userId) => {
                   My Profile
                 </a>
                 <a
-                  href="/settings"
+                  href="/empSettings"
                   className="block px-4 py-2 text-primary hover:bg-accent hover:rounded-lg hover:shadow-lg"
                 >
                   Settings

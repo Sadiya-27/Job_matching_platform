@@ -18,6 +18,10 @@ export default function Jobseeker() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
+  const [searchQuery, setSearchQuery] = useState('');
+const [employerResults, setEmployerResults] = useState([]);
+const [selectedConversation, setSelectedConversation] = useState(null);
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -55,8 +59,40 @@ export default function Jobseeker() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleEmployerClick = (employer) => {
+  setSelectedConversation({
+    id: employer.id, // was employer._id
+    name: employer.name,
+    email: employer.email,
+    photoUrl: employer.photoUrl || "/default-avatar.png",
+    role: "employer",
+  });
+};
+
+useEffect(() => {
+  const fetchEmployers = async () => {
+    if (searchQuery.length < 2) return;
+
+    try {
+      const res = await fetch(`/api/employers/search?email=${encodeURIComponent(searchQuery)}`);
+      if (!res.ok) throw new Error("Failed to fetch employers");
+      const data = await res.json();
+      setEmployerResults(data);
+    } catch (error) {
+      console.error("Employer search error:", error);
+      setEmployerResults([]);
+    }
+  };
+
+  const debounce = setTimeout(fetchEmployers, 400); // debounce
+
+  return () => clearTimeout(debounce);
+}, [searchQuery]);
+
+
+
   const userName = userData?.name || session?.user?.name || "User";
-  const userImage = userData?.image || session?.user?.image || "/user-avatar.png";
+  const userImage = userData?.userImage || session?.user?.image || "/user-avatar.png";
 
   if (loading) {
     return (
@@ -122,7 +158,9 @@ export default function Jobseeker() {
         <div className="hidden md:flex justify-between items-center mb-6 relative">
           <input
             type="text"
-            placeholder="Quick Search (Ctrl + Q)"
+            placeholder="Search employer by email"
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
             className="w-1/2 px-4 py-2 bg-white/50 backdrop-blur-lg text-primary shadow-lg rounded-lg"
           />
           <div className="relative" ref={dropdownRef}>
@@ -144,6 +182,31 @@ export default function Jobseeker() {
             )}
           </div>
         </div>
+
+        {searchQuery.length >= 2 && employerResults.length > 0 && (
+  <div className="absolute mt-2 bg-white border rounded shadow-md w-96 z-50">
+    {employerResults.map((employer) => (
+      <div
+        key={employer.id}
+        className="flex items-center gap-3 p-2 hover:bg-accent cursor-pointer"
+        onClick={() => {
+          setSelectedConversation(employer);
+          setEmployerResults([]);
+          setSearchQuery("");
+        }}
+      >
+        <img
+          src={employer.photoUrl || "/default-avatar.png"}
+          alt={employer.name}
+          className="w-8 h-8 rounded-full"
+        />
+        <div className="text-primary font-medium">{employer.name}</div>
+        <div className="text-gray-500 text-sm ml-auto">{employer.email}</div>
+      </div>
+    ))}
+  </div>
+)}
+
 
         {/* Message chat based on text */}
         {/* Job Seeker Messenger */}

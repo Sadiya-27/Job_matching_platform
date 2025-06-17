@@ -17,6 +17,7 @@ export default function Employer() {
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const dropdownRef = useRef(null);
+  const [profData, setProfData] = useState(null);
 
   // Form state for employer profile
   const [profileData, setProfileData] = useState({
@@ -48,6 +49,27 @@ export default function Employer() {
     missionVision: "",
     companyCulture: "",
   });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const endpoint = token ? "/api/user/manual" : "/api/user/me";
+        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+        const res = await fetch(endpoint, { method: "GET", headers });
+
+        if (!res.ok) throw new Error("Failed to fetch user data");
+        const data = await res.json();
+        setProfData(data);
+      } catch (err: any) {
+        console.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [session]);
 
   useEffect(() => {
     const fetchEmployerProfile = async () => {
@@ -194,8 +216,7 @@ export default function Employer() {
   };
 
   const userName = userData?.name || session?.user?.name || "Employer";
-  const userImage =
-    userData?.image || session?.user?.image || "/user-avatar.png";
+  const userImage = profData?.userImage || session?.user?.image || "/user-avatar.png";
 
   if (loading) {
     return (
@@ -238,7 +259,7 @@ export default function Employer() {
                 My Profile
               </a>
               <a
-                href="/settings"
+                href="/empSettings"
                 className="block px-4 py-2 text-primary hover:bg-cyan-300"
               >
                 Settings
@@ -333,7 +354,7 @@ export default function Employer() {
                   My Profile
                 </a>
                 <a
-                  href="/settings"
+                  href="/empSettings"
                   className="block px-4 py-2 text-primary hover:bg-accent hover:rounded-lg hover:shadow-lg"
                 >
                   Settings

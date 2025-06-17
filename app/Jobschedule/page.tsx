@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
 import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import '@/app/styles/custom-callender.css'; // Create this file if not already
-
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import "@/app/styles/custom-callender.css"; // Create this file if not already
+import { Button } from "@/components/ui/button";
 
 export default function Jobseeker() {
   const router = useRouter();
@@ -18,13 +18,17 @@ export default function Jobseeker() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
+  const [applications, setApplications] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem("token");
         const endpoint = token ? "/api/user/manual" : "/api/user/me";
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+        const headers = token
+          ? { Authorization: `Bearer ${token}` }
+          : undefined;
         const res = await fetch(endpoint, { method: "GET", headers });
 
         if (!res.ok) throw new Error("Failed to fetch user data");
@@ -47,7 +51,10 @@ export default function Jobseeker() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !(dropdownRef.current as any).contains(event.target)) {
+      if (
+        dropdownRef.current &&
+        !(dropdownRef.current as any).contains(event.target)
+      ) {
         setDropdownOpen(false);
       }
     }
@@ -55,8 +62,50 @@ export default function Jobseeker() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleRevokeApplication = async (applicationId: string) => {
+    const confirmDelete = confirm(
+      "Are you sure you want to revoke this application?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`/api/application/${applicationId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to revoke application.");
+      }
+
+      // Remove it from state
+      setApplications((prev) =>
+        prev.filter((app) => app._id !== applicationId)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Error while revoking the application.");
+    }
+  };
+
+  useEffect(() => {
+    if (!userData || !userData._id) return;
+
+    const fetchApplications = async () => {
+      try {
+        const res = await fetch(`/api/jobseeker/applications/${userData._id}`);
+        const data = await res.json();
+        setApplications(data);
+      } catch (err) {
+        console.error("Failed to fetch applications:", err);
+      }
+    };
+
+    fetchApplications();
+  }, [userData]); // Run only when user is loaded
+
   const userName = userData?.name || session?.user?.name || "User";
-  const userImage = userData?.image || session?.user?.image || "/user-avatar.png";
+  const userImage =
+    userData?.userImage || session?.user?.image || "/user-avatar.png";
 
   if (loading) {
     return (
@@ -72,10 +121,22 @@ export default function Jobseeker() {
       <div className="md:hidden flex shadow-lg items-center justify-between p-4 border-b bg-muted">
         <div className="flex items-center gap-2">
           <button onClick={() => setSidebarOpen(!sidebarOpen)}>
-            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {sidebarOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
-          <Image src="/logo.png" alt="Logo" width={30} height={30} className="" />
-          <span className="text-xl font-semibold text-secondary">JobLinker</span>
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={30}
+            height={30}
+            className=""
+          />
+          <span className="text-xl font-semibold text-secondary">
+            JobLinker
+          </span>
         </div>
         <div className="relative" ref={dropdownRef}>
           <img
@@ -86,8 +147,18 @@ export default function Jobseeker() {
           />
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-              <a href="/profile" className="block px-4 py-2 text-primary hover:bg-cyan-300">My Profile</a>
-              <a href="/settings" className="block px-4 py-2 text-primary hover:bg-cyan-300">Settings</a>
+              <a
+                href="/profile"
+                className="block px-4 py-2 text-primary hover:bg-cyan-300"
+              >
+                My Profile
+              </a>
+              <a
+                href="/settings"
+                className="block px-4 py-2 text-primary hover:bg-cyan-300"
+              >
+                Settings
+              </a>
               <button
                 onClick={handleSignOut}
                 className="w-full text-left px-4 py-2 text-primary hover:bg-cyan-300"
@@ -100,18 +171,46 @@ export default function Jobseeker() {
       </div>
 
       {/* Sidebar */}
-      <aside className={`w-full md:w-64 bg-white/30 shadow-xl border-r rounded-xl p-4 md:p-6 flex flex-col justify-between transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? "block" : "hidden"} md:block`}>
+      <aside
+        className={`w-full md:w-64 bg-white/30 shadow-xl border-r rounded-xl p-4 md:p-6 flex flex-col justify-between transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? "block" : "hidden"} md:block`}
+      >
         <div>
           <div className="hidden md:flex items-center mb-8">
-            <Image src="/logo.png" alt="Logo" width={50} height={50} className="mr-2" />
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={50}
+              height={50}
+              className="mr-2"
+            />
             <h1 className="text-2xl font-semibold text-secondary">JobLinker</h1>
           </div>
           <nav className="space-y-4 text-primary">
-            <a href="../Jobdashboard" className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium">Dashboard</a>
-            <a href="../Jobseeker" className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium">Job Board</a>
-            <a href="../Jobschedule" className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl">Schedule</a>
-            <a href="../Jobmessenger" className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl">Messenger</a>
+            <a
+              href="../Jobdashboard"
+              className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium"
+            >
+              Dashboard
+            </a>
+            <a
+              href="../Jobseeker"
+              className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium"
+            >
+              Job Board
+            </a>
+            <a
+              href="../Jobschedule"
+              className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl"
+            >
+              Schedule
+            </a>
+            <a
+              href="../Jobmessenger"
+              className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl"
+            >
+              Messenger
+            </a>
           </nav>
         </div>
       </aside>
@@ -122,18 +221,39 @@ export default function Jobseeker() {
         <div className="hidden md:flex justify-between items-center mb-6 relative">
           <input
             type="text"
-            placeholder="Quick Search (Ctrl + Q)"
+            placeholder="Search applications by job title..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-1/2 px-4 py-2 bg-white/50 backdrop-blur-lg text-primary shadow-lg rounded-lg"
           />
           <div className="relative" ref={dropdownRef}>
-            <button onClick={() => setDropdownOpen(!dropdownOpen)} className="flex items-center gap-2">
-              <span className="font-semibold text-primary mr-2">{userName}</span>
-              <img src={userImage} alt="User" className="w-8 h-8 rounded-full border-2 cursor-pointer" />
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-2"
+            >
+              <span className="font-semibold text-primary mr-2">
+                {userName}
+              </span>
+              <img
+                src={userImage}
+                alt="User"
+                className="w-8 h-8 rounded-full border-2 cursor-pointer"
+              />
             </button>
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 px-4 py-3 font-semibold w-48 bg-white rounded-md shadow-lg z-50">
-                <a href="/profile" className="block px-4 py-2 text-primary hover:bg-accent hover:rounded-lg hover:shadow-lg">My Profile</a>
-                <a href="/settings" className="block px-4 py-2 text-primary hover:rounded-lg hover:bg-accent hover:shadow-lg">Settings</a>
+                <a
+                  href="/profile"
+                  className="block px-4 py-2 text-primary hover:bg-accent hover:rounded-lg hover:shadow-lg"
+                >
+                  My Profile
+                </a>
+                <a
+                  href="/settings"
+                  className="block px-4 py-2 text-primary hover:rounded-lg hover:bg-accent hover:shadow-lg"
+                >
+                  Settings
+                </a>
                 <button
                   onClick={handleSignOut}
                   className="w-full text-left px-4 py-2 hover:shadow-lg hover:rounded-lg text-primary hover:bg-accent"
@@ -147,59 +267,107 @@ export default function Jobseeker() {
 
         {/* Calender with dates marked */}
         <div className="mb-10 bg-white/50 backdrop-blur-lg py-4 px-4 rounded-xl shadow-xl max-w-lg">
-        <h2 className="text-xl font-semibold text-primary mb-4">Your Schedule</h2>
-        <div className="flex justify-center items-center">
-            <Calendar
-  tileContent={({ date }) => {
-  const events = {
-    "2025-05-20": { icon: "📅", label: "Interview at Google Headquarters, 10:00 AM" },
-    "2025-05-25": { icon: "🎯", label: "National Hackathon - Team ShadowCoders" },
-    "2025-06-01": { icon: "💼", label: "Final Round Interview with Adobe via Zoom" },
-  };
+          <h2 className="text-xl font-semibold text-primary mb-4">
+            Your Schedule
+          </h2>
 
-  const key = date.toISOString().split('T')[0];
-  const event = events[key];
-
-  return event ? (
-    <div className="relative group w-full h-full flex items-center justify-center">
-      <span className="text-lg">{event.icon}</span>
-      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white text-primary text-sm px-4 py-2 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-[100] w-max max-w-[250px] text-center pointer-events-none">
-        {event.label}
-      </div>
-    </div>
-  ) : null;
-}}
-
-
-/>
-
+          {applications.filter((app) => app.interviewDate).length === 0 ? (
+            <p className="text-gray-600 text-sm">
+              No interviews scheduled yet.
+            </p>
+          ) : (
+            <ul className="space-y-4 text-sm text-gray-800">
+              {applications
+                .filter((app) => app.interviewDate)
+                .map((app) => (
+                  <li key={app._id}>
+                    <strong>{app.jobId?.title || "Untitled Job"}</strong>
+                    <br />
+                    Interview - {new Date(
+                      app.interviewDate
+                    ).toDateString()} at {app.interviewTime || "TBD"}
+                    <br />
+                    {app.interviewLocation ? (
+                      <>Location: {app.interviewLocation}</>
+                    ) : (
+                      <>Location: TBD</>
+                    )}
+                  </li>
+                ))}
+            </ul>
+          )}
         </div>
-        </div>
-
-
 
         {/* applied jobs */}
         {/* Applied Jobs Section */}
-        <section className="mt-6 bg-white/40 backdrop-blur-lg p-4 md:p-6 rounded-xl shadow-xl text-primary">
-        <h2 className="text-xl md:text-2xl font-bold mb-4">Jobs Applied</h2>
-        
-        {/* Example of applied jobs, replace with dynamic data if available */}
-        <div className="space-y-4">
-            <div className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-all">
-            <h3 className="text-lg font-semibold">Frontend Developer at TechSpark</h3>
-            <p className="text-sm text-gray-600">Applied on: May 14, 2025</p>
-            <span className="inline-block mt-2 px-3 py-1 bg-accent text-white rounded-full text-xs">Under Review</span>
-            </div>
+        {applications.length === 0 ? (
+          <p>No applications yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {applications
+              .filter((app) =>
+                app.jobId?.title
+                  ?.toLowerCase()
+                  .includes(searchQuery.trim().toLowerCase())
+              )
+              .map((app) => (
+                <div
+                  key={app._id}
+                  className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-all"
+                >
+                  <h3 className="text-lg font-semibold">
+                    {app.jobId?.title || "Job Title"} at{" "}
+                    {app.jobId?.employer?.companyName || "Unknown Company"}
+                  </h3>
 
-            <div className="p-4 bg-white rounded-lg shadow hover:shadow-lg transition-all">
-            <h3 className="text-lg font-semibold">UI/UX Designer at Creatix</h3>
-            <p className="text-sm text-gray-600">Applied on: May 10, 2025</p>
-            <span className="inline-block mt-2 px-3 py-1 bg-accent text-white rounded-full text-xs">Interview Scheduled</span>
-            </div>
-        </div>
-        </section>
+                  <p className="text-sm text-gray-600">
+                    Applied on: {new Date(app.appliedAt).toDateString()}
+                  </p>
 
+                  <p className="text-sm text-gray-600">
+                    Resume:{" "}
+                    <a
+                      href={app.resumeLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      View Resume
+                    </a>
+                  </p>
 
+                  {/* Interview Details */}
+                  {app.interviewDate && (
+                    <p className="text-sm text-gray-600">
+                      Interview on: {new Date(app.interviewDate).toDateString()}
+                      {app.interviewTime && ` at ${app.interviewTime}`}
+                      {app.interviewLocation && ` (${app.interviewLocation})`}
+                    </p>
+                  )}
+
+                  {/* Joining Details */}
+                  {app.joiningDate && (
+                    <p className="text-sm text-gray-600">
+                      Joining Date: {new Date(app.joiningDate).toDateString()}
+                    </p>
+                  )}
+
+                  {/* Status Badge */}
+                  <span className="inline-block mt-2 px-3 py-1 bg-accent text-white rounded-full text-xs capitalize">
+                    {app.status}
+                  </span>
+
+                  {/* Revoke Button */}
+                  <Button
+                    onClick={() => handleRevokeApplication(app._id)}
+                    className="ml-4 mt-2 text-sm bg-red-200 text-red-600 hover:bg-red-600 hover:text-white"
+                  >
+                    Revoke Application
+                  </Button>
+                </div>
+              ))}
+          </div>
+        )}
       </main>
     </div>
   );

@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { UploadButton } from "@uploadthing/react";
 
 export default function Jobseeker() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function Jobseeker() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [jobseekerData, setJobseekerData] = useState(null);
   const dropdownRef = useRef(null);
@@ -478,7 +479,7 @@ export default function Jobseeker() {
 
   const userName = userData?.name || session?.user?.name || "Jobseeker";
   const userImage =
-    userData?.image || session?.user?.image || "/user-avatar.png";
+    userData?.userImage || session?.user?.image || "/user-avatar.png";
 
   if (loading) {
     return (
@@ -1854,12 +1855,12 @@ export default function Jobseeker() {
             <section>
               <h3 className="text-xl font-semibold mb-4">Online Profiles</h3>
               <div className="grid md:grid-cols-2 gap-4">
+                {/* Other profile URLs */}
                 {[
                   { label: "LinkedIn URL", key: "linkedInUrl" },
                   { label: "GitHub URL", key: "githubUrl" },
                   { label: "Portfolio URL", key: "portfolioUrl" },
                   { label: "Twitter URL", key: "twitterUrl" },
-                  { label: "Resume URL", key: "resumeUrl" },
                 ].map(({ label, key }) => (
                   <div key={key}>
                     <label className="block text-sm font-medium mb-2">
@@ -1879,6 +1880,49 @@ export default function Jobseeker() {
                     )}
                   </div>
                 ))}
+
+                {/* Resume URL with UploadThing */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Resume URL
+                  </label>
+                  {isEditing ? (
+                    <>
+                      <input
+                        type="url"
+                        value={profileData.resumeUrl}
+                        onChange={(e) =>
+                          handleInputChange("resumeUrl", e.target.value)
+                        }
+                        placeholder="Paste resume link or upload below"
+                        className="w-full px-3 py-2 mb-2 bg-white/50 backdrop-blur-sm rounded-lg border border-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                      <UploadButton
+                        endpoint="resumeUploader"
+                        appearance={{
+                          button:
+                            "ut-upload-btn bg-secondary hover:bg-accent text-white px-4 py-2 rounded-lg",
+                          container: "ut-upload-container mt-2",
+                          allowedContent: "text-xs text-gray-500",
+                        }}
+                        onClientUploadComplete={(res) => {
+                          if (res && res[0]?.url) {
+                            handleInputChange("resumeUrl", res[0].url);
+                            alert("Resume uploaded!");
+                          }
+                        }}
+                        onUploadError={(error) => {
+                          console.error(error);
+                          alert("Upload failed. Please try again.");
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <p className="px-3 py-2 bg-white/30 rounded-lg break-all">
+                      {profileData.resumeUrl || "Not provided"}
+                    </p>
+                  )}
+                </div>
               </div>
             </section>
 

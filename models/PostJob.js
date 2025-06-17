@@ -51,6 +51,14 @@ const postJobSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    status: {
+      type: String,
+      enum: [
+        "Open",
+        "Interviewing",
+      ],
+      default: "Open",
+    }
   },
   {
     timestamps: true, // Adds createdAt and updatedAt automatically

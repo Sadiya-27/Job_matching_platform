@@ -52,7 +52,7 @@ export default function Employer() {
   };
 
   const userName = userData?.name || session?.user?.name || "Employer";
-  const userImage = userData?.image || session?.user?.image || "/user-avatar.png";
+  const userImage = userData?.userImage || session?.user?.image || "/user-avatar.png";
 
   if (loading) {
     return (
@@ -83,7 +83,7 @@ export default function Employer() {
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
               <a href="../Empprofile" className="block px-4 py-2 text-primary hover:bg-cyan-300">My Profile</a>
-              <a href="/settings" className="block px-4 py-2 text-primary hover:bg-cyan-300">Settings</a>
+              <a href="/empSettings" className="block px-4 py-2 text-primary hover:bg-cyan-300">Settings</a>
               <button
                 onClick={handleSignOut}
                 className="w-full text-left px-4 py-2 text-primary hover:bg-cyan-300"
@@ -130,7 +130,7 @@ export default function Employer() {
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 font-semibold px-4 py-3 w-48 bg-white rounded-md shadow-lg z-50">
                 <a href="/Empprofile" className="block px-4 py-2 text-primary hover:bg-accent hover:rounded-lg hover:shadow-lg">My Profile</a>
-                <a href="/settings" className="block px-4 py-2 text-primary hover:bg-accent hover:rounded-lg hover:shadow-lg">Settings</a>
+                <a href="/empSettings" className="block px-4 py-2 text-primary hover:bg-accent hover:rounded-lg hover:shadow-lg">Settings</a>
                 <button
                   onClick={handleSignOut}
                   className="w-full text-left px-4 py-2 text-primary hover:bg-accent hover:rounded-lg hover:shadow-lg"
