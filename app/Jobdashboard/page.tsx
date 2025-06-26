@@ -164,7 +164,7 @@ export default function Jobseeker() {
             <a href="../Jobdashboard" className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium">Dashboard</a>
             <a href="../Jobseeker" className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium">Job Board</a>
             <a href="../Jobschedule" className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl">Schedule</a>
-            <a href="../Jobmessenger" className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl">Messenger</a>
+            {/* <a href="../Jobmessenger" className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl">Messenger</a> */}
           </nav>
         </div>
       </aside>

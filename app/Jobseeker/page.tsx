@@ -70,8 +70,9 @@ export default function Jobseeker() {
       try {
         const res = await fetch("/api/JobsPosted");
         const data = await res.json();
-        setJobs(data);
-        setJobsToDisplay(data);
+        setJobs(data.jobs);
+        setJobsToDisplay(data.jobs);
+
       } catch (err) {
         console.error("Error fetching jobs:", err);
       }
@@ -211,12 +212,12 @@ export default function Jobseeker() {
             >
               Schedule
             </a>
-            <a
+            {/* <a
               href="../Jobmessenger"
               className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl"
             >
               Messenger
-            </a>
+            </a> */}
           </nav>
         </div>
       </aside>
@@ -386,7 +387,7 @@ export default function Jobseeker() {
                       <div>
                         <h3 className="font-bold text-lg">{job.title}</h3>
                         <p className="text-sm text-gray-500">
-                          {job?.employer?.companyName || "Unknown"} •{" "}
+                          {job?.employer.companyName || "Unknown"} •{" "}
                           {job.location}
                         </p>
                         {typeof job.score === "number" && (
@@ -429,11 +430,7 @@ export default function Jobseeker() {
             ) : (
               <p className="text-lg text-primary font-medium">No jobs found.</p>
             )}
-          </div>
-
-        
-
-        
+          </div>        
 
         {showModal && selectedJob && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center text-primary justify-center px-4">

@@ -162,7 +162,7 @@ export default function Employer() {
             <a href="../Postjob" className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium">Post Jobs</a>
             <a href="../Applicants" className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium">Applicants</a>
             <a href="../Empschedule" className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium">Schedule</a>
-            <a href="../Empmessenger" className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium">Messenger</a>
+            {/* <a href="../Empmessenger" className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium">Messenger</a> */}
           </nav>
         </div>
       </aside>

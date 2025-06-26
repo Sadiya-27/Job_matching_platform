@@ -205,12 +205,12 @@ export default function Jobseeker() {
             >
               Schedule
             </a>
-            <a
+            {/* <a
               href="../Jobmessenger"
               className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl"
             >
               Messenger
-            </a>
+            </a> */}
           </nav>
         </div>
       </aside>
@@ -305,11 +305,7 @@ export default function Jobseeker() {
         ) : (
           <div className="space-y-4">
             {applications
-              .filter((app) =>
-                app.jobId?.title
-                  ?.toLowerCase()
-                  .includes(searchQuery.trim().toLowerCase())
-              )
+              
               .map((app) => (
                 <div
                   key={app._id}

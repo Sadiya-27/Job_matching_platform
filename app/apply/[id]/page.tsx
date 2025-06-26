@@ -78,7 +78,7 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
 
   const userName = userData?.name || session?.user?.name || "User";
   const userImage =
-    userData?.image || session?.user?.image || "/user-avatar.png";
+    userData?.userImage || session?.user?.image || "/user-avatar.png";
 
   if (loading || !job) {
     return (
@@ -173,12 +173,12 @@ export default function ApplyPage({ params }: { params: { id: string } }) {
             >
               Schedule
             </a>
-            <a
+            {/* <a
               href="../Jobmessenger"
               className="block px-3 py-2 rounded-lg font-medium hover:bg-accent hover:shadow-xl"
             >
               Messenger
-            </a>
+            </a> */}
           </nav>
         </div>
       </aside>

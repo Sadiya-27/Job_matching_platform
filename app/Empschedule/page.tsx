@@ -466,12 +466,12 @@ export default function Employer() {
             >
               Schedule
             </a>
-            <a
+            {/* <a
               href="../Empmessenger"
               className="block px-3 py-2 rounded-lg hover:bg-accent hover:shadow-xl font-medium"
             >
               Messenger
-            </a>
+            </a> */}
           </nav>
         </div>
       </aside>

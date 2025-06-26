@@ -214,12 +214,12 @@ export default function Jobseeker() {
               >
                 Schedule
               </a>
-              <a
+              {/* <a
                 href="../Jobmessenger"
                 className="block px-3 py-2 rounded-lg font-medium  hover:bg-accent hover:shadow-xl"
               >
                 Messenger
-              </a>
+              </a> */}
             </nav>
           </div>
         </aside>
