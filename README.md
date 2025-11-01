@@ -1,7 +1,6 @@
 # 💼 JobLinker – AI-Powered Job Matching Platform  
 
-**Lead Developer & Team Lead:** Sadiya Fatima Khwaja  
-**Team Members:** (Add names of your teammates here)  
+**Lead Developer & Team Lead:** Sadiya Fatima Khwaja    
 
 ---
 
